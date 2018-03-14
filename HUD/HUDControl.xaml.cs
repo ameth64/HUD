@@ -25,7 +25,7 @@ namespace HUD
         /// <summary>
         /// 姿态改变
         /// </summary>
-        private static void GestureChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void AttitudeChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((HUDControl)d).InvalidateVisual();
         }
@@ -39,7 +39,7 @@ namespace HUD
             set { SetValue(YawAngleProperty, value); }
         }
         public static readonly DependencyProperty YawAngleProperty =
-            DependencyProperty.Register("YawAngle", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, GestureChangedCallback));
+            DependencyProperty.Register("YawAngle", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, AttitudeChangedCallback));
 
         ///// <summary>
         ///// 翻转角
@@ -50,7 +50,7 @@ namespace HUD
             set { SetValue(RollAngleProperty, value); }
         }
         public static readonly DependencyProperty RollAngleProperty =
-            DependencyProperty.Register("RollAngle", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, GestureChangedCallback));
+            DependencyProperty.Register("RollAngle", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, AttitudeChangedCallback));
         /// <summary>
         /// 翻转角范围
         /// </summary>
@@ -60,7 +60,7 @@ namespace HUD
             set { SetValue(MaxRollAngleProperty, value); }
         }
         public static readonly DependencyProperty MaxRollAngleProperty =
-            DependencyProperty.Register("MaxRollAngle", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)180, GestureChangedCallback));
+            DependencyProperty.Register("MaxRollAngle", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)180, AttitudeChangedCallback));
 
         ///// <summary>
         ///// 俯仰角
@@ -71,7 +71,7 @@ namespace HUD
             set { SetValue(PitchAngleProperty, value); }
         }
         public static readonly DependencyProperty PitchAngleProperty =
-            DependencyProperty.Register("PitchAngle", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, GestureChangedCallback), PitchAngleValidateValueCallback);
+            DependencyProperty.Register("PitchAngle", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, AttitudeChangedCallback), PitchAngleValidateValueCallback);
         private static bool PitchAngleValidateValueCallback(object value)
         {
             bool v = (double)value >= -90 && (double)value <= 90;
@@ -89,7 +89,7 @@ namespace HUD
             left_l1.Y1 = 30;
             left_l1.X2 = wl;
             left_l1.Y2 = 30;
-            left_l1.Stroke = Brushes.White;
+            left_l1.Stroke = Brushes.LimeGreen;
             left_l1.StrokeThickness = 1;
             yawstaffCanvas.Children.Add(left_l1);
             for (int d = 1; d < 90 / tickcount - 1; d++)
@@ -99,63 +99,104 @@ namespace HUD
                 left_tl.Y1 = 20;
                 left_tl.X2 = left_tl.X1;
                 left_tl.Y2 = 30;
-                left_tl.Stroke = Brushes.White;
+                left_tl.Stroke = Brushes.LimeGreen;
                 left_tl.StrokeThickness = 1;
                 yawstaffCanvas.Children.Add(left_tl);
                 if ((isrightcanvas && d % 2 == 1) || (!isrightcanvas && d % 2 == 0)) continue;//间隔显示
                 var ticktext = new BorderTextLabel();
                 ticktext.FontWeight = FontWeights.ExtraBold;
-                ticktext.Stroke = Brushes.Gray;
+                ticktext.Stroke = Brushes.LimeGreen;
                 ticktext.FontSize = 14;
                 if (isrightcanvas)
                     ticktext.Text = (d * 90 / tickcount).ToString();
                 else
                     ticktext.Text = (90 - d * 90 / tickcount).ToString();
-                ticktext.Foreground = Brushes.White;
+                ticktext.Foreground = Brushes.LimeGreen;
+                ticktext.StrokeThickness = 0;
                 Canvas.SetTop(ticktext, 2);
                 Canvas.SetLeft(ticktext, left_tl.X1 - 10);
                 yawstaffCanvas.Children.Add(ticktext);
+            }
+        }
+        // 绘制根据yaw偏转后的两侧刻度值, 设整个区间为150度, 中间数值框遮挡对应宽度为15度
+        private float yaw_mid_span = 20 / 2;
+        private int yaw_total_span = (int)(150 / 2);
+        private void DrawYawIndicator(Canvas yawstaffCanvas, float yaw, bool is_right)
+        {
+            yawstaffCanvas.Children.Clear();
+            double wl = yawstaffCanvas.ActualWidth;
+            // 绘制底部刻度线
+            Line left_l1 = new Line();
+            left_l1.X1 = 0;
+            left_l1.Y1 = 30;
+            left_l1.X2 = wl;
+            left_l1.Y2 = 30;
+            left_l1.Stroke = Brushes.LimeGreen;
+            left_l1.StrokeThickness = 1;
+            yawstaffCanvas.Children.Add(left_l1);
+            // 绘制刻度线
+            int start_yaw = (int)((is_right) ? (yaw + yaw_mid_span) : (yaw - yaw_mid_span - yaw_total_span));
+            start_yaw %= 360;
+            if (start_yaw < 0) start_yaw += 360;
+
+            int end_yaw = start_yaw + yaw_total_span;
+                                   
+
+            int yaw_indic_step = 20, inc_step = 1;
+            int half_yaw_indic_step = yaw_indic_step / 2;
+            for (int d = start_yaw; d < end_yaw; d += inc_step)
+            {
+                if(d % half_yaw_indic_step == 0)
+                {
+                    for(int d2 = d; d2 < end_yaw; d2 += half_yaw_indic_step)
+                    {
+                        Line left_tl = new Line();
+                        left_tl.X1 = (float)(d2 - start_yaw) * wl / yaw_total_span;
+                        left_tl.Y1 = 20;
+                        left_tl.X2 = left_tl.X1;
+                        left_tl.Y2 = 30;
+                        left_tl.Stroke = Brushes.LimeGreen;
+                        left_tl.StrokeThickness = 1;
+                        yawstaffCanvas.Children.Add(left_tl);
+                        if(d2 % yaw_indic_step == 0 && ((is_right == false && wl - left_tl.X1 > 15) || ((is_right == true && left_tl.X1 > 15))))
+                        {
+                            var ticktext = new BorderTextLabel();
+                            //ticktext.FontWeight = FontWeights.ExtraBold;
+                            ticktext.Stroke = Brushes.LimeGreen;
+                            ticktext.FontSize = 14;
+                            ticktext.Text = (d2 % 360).ToString();
+                            ticktext.Foreground = Brushes.LimeGreen;
+                            ticktext.StrokeThickness = 0;
+                            Canvas.SetTop(ticktext, 2);
+                            Canvas.SetLeft(ticktext, left_tl.X1 - 10);
+                            yawstaffCanvas.Children.Add(ticktext);
+                        }
+                    }
+                    break;
+                }
             }
         }
 
         private void SetYaw(double yaw)
         {
             if (Grid_YawStaff.ActualWidth == 0) return;
-            yaw = yaw % 360;
-            if (yaw > 180) yaw = yaw - 360;
-            if (yaw < -180) yaw = yaw + 360;
-            double left = Grid_YawStaff.ActualWidth / 2 - 15;
-            if (yaw > 90 || yaw < -90)
-            {
-                TextBlock_YawStaff_Left.Text = "E";
-                TextBlock_YawStaff_Middle.Text = "S";
-                TextBlock_YawStaff_Right.Text = "W";
-                if (yaw != 180 && yaw != -180)
-                {
-                    if (yaw > 0) left = Grid_YawStaff.ActualWidth / 2 - 30 - (180 - yaw) / 90 * Canvas_YawStaff_Right.ActualWidth;
-                    else if (yaw < 0) left = Grid_YawStaff.ActualWidth / 2 + (180 + yaw) / 90 * Canvas_YawStaff_Right.ActualWidth;
-                }
-            }
-            else
-            {
-                TextBlock_YawStaff_Left.Text = "W";
-                TextBlock_YawStaff_Middle.Text = "N";
-                TextBlock_YawStaff_Right.Text = "E";
-                if (yaw == 90) left = Grid_YawStaff.ActualWidth - 30;
-                else if (yaw == -90) left = 0;
-                else if (yaw > 0) left = Grid_YawStaff.ActualWidth / 2 + yaw / 90 * Canvas_YawStaff_Right.ActualWidth;
-                else if (yaw < 0) left = Grid_YawStaff.ActualWidth / 2 - 30 + yaw / 90 * Canvas_YawStaff_Right.ActualWidth;
-            }
-            Canvas_YawStaff_Value.Margin = new Thickness(left, 0, 0, 0);
-            Text_YawStaff_Value.Text = Math.Abs(yaw % 90).ToString("0.##");
-            Text_YawStaff_Value.ToolTip = "原始值：" + YawAngle.ToString("0.###");
+
+            text_yaw_value.Text = Math.Abs(yaw).ToString("0.");
+            text_yaw_value.ToolTip = "原始值：" + YawAngle.ToString("0.###");
         }
+
 
         protected virtual void RedrawYaw()
         {
-            DrawStaffTicks(Canvas_YawStaff_Left, false);
-            DrawStaffTicks(Canvas_YawStaff_Right, true);
-            SetYaw(YawAngle);
+            double _YawAngle = (YawAngle % 360);
+            if (_YawAngle < 0)
+            {
+                _YawAngle += 360;
+            }
+            
+            DrawYawIndicator(Canvas_YawStaff_Left, (float)_YawAngle, false);
+            DrawYawIndicator(Canvas_YawStaff_Right, (float)_YawAngle, true);
+            SetYaw(_YawAngle);
         }
 
         private void DrawRollTick(double cycleR, double angle)
@@ -165,17 +206,18 @@ namespace HUD
             line.X2 = 0;
             line.Y1 = 6;
             line.Y2 = 0;
-            line.Stroke = Brushes.White;
+            line.Stroke = Brushes.LimeGreen;
             line.StrokeThickness = 2;
             Canvas.SetTop(line, -cycleR);
             line.RenderTransform = new RotateTransform(angle, 0, cycleR);
             Canvas_ViewPortMiddle.Children.Add(line);
             var textblock = new BorderTextLabel();
             textblock.Width = 20;
-            textblock.Stroke = Brushes.DimGray;
+            textblock.Stroke = Brushes.LimeGreen;
+            textblock.StrokeThickness = 0;
             textblock.HorizontalContentAlignment = HorizontalAlignment.Center;
             textblock.Text = Math.Abs(angle).ToString("##0");
-            textblock.Foreground = Brushes.White;
+            textblock.Foreground = Brushes.LimeGreen;
             textblock.FontSize = 14;
             textblock.FontWeight = FontWeights.Bold;
             Canvas.SetTop(textblock, -cycleR - 20);
@@ -190,17 +232,17 @@ namespace HUD
             line.X2 = 40;
             line.Y1 = 0;
             line.Y2 = 0;
-            line.Stroke = Brushes.White;
+            line.Stroke = Brushes.LimeGreen;
             line.StrokeThickness = 2;
             Canvas.SetLeft(line, -20);
             Canvas.SetTop(line, offset);
             Canvas_ViewPortMiddle.Children.Add(line);
             var textblock = new BorderTextLabel();
             textblock.Width = 22;
-            textblock.Stroke = Brushes.DimGray;
+            textblock.Stroke = Brushes.LimeGreen;
             textblock.HorizontalContentAlignment = HorizontalAlignment.Center;
             textblock.Text = pitch.ToString("##0");
-            textblock.Foreground = Brushes.White;
+            textblock.Foreground = Brushes.LimeGreen;
             textblock.FontSize = 16;
             textblock.FontWeight = FontWeights.Bold;
             Canvas.SetTop(textblock, offset - 8);
@@ -248,7 +290,7 @@ namespace HUD
             Canvas_ViewPortMiddle.Children.Clear();
             bool isLargeArc = MaxRollAngle > 90;
             //double cycleR = Grid_Virwport.ActualWidth / 4;
-            double cycleR = 100;
+            double cycleR = 115;
             Point startPoint = new Point(-cycleR * Math.Sin(MaxRollAngle * Math.PI / 180), -cycleR * Math.Cos(MaxRollAngle * Math.PI / 180));
             Point endPoint = new Point(cycleR * Math.Sin(MaxRollAngle * Math.PI / 180), -cycleR * Math.Cos(MaxRollAngle * Math.PI / 180));
             if (MaxRollAngle == 180)
@@ -260,7 +302,7 @@ namespace HUD
             PathGeometry geometry = new PathGeometry(new PathFigure[] { new PathFigure(startPoint, new PathSegment[] { arcpath }, false) });
             Path cyclepath = new Path();
             cyclepath.Data = geometry;
-            cyclepath.Stroke = Brushes.White;
+            cyclepath.Stroke = Brushes.LimeGreen;
             cyclepath.StrokeThickness = 2;
             int tickangle = 10;
             DrawRollTick(cycleR, 0);
@@ -295,7 +337,7 @@ namespace HUD
 
             Canvas.SetTop(Canvas_RollCursor, -cycleR - Canvas_RollCursor.Height);
             Canvas.SetLeft(Canvas_RollCursor, -Canvas_RollCursor.Width / 2);
-            Text_RollStaff_Value.Text = RollAngle.ToString("0.##");
+            Text_RollStaff_Value.Text = RollAngle.ToString("0.#");
         }
 
         protected virtual void RedrawRoll()
@@ -336,16 +378,29 @@ namespace HUD
             DrawRollPitchCycle();
         }
 
+
+        private double pitch_delta_h = Math.PI / 2 / (360 / 2), zero_offset = 0.5 + 0 * 220.0 / 400.0;
         protected virtual void RedrawPitch()
-        {
+        {            
+            double pitch_offset = pitch_delta_h * PitchAngle;
             var bkbrush = (LinearGradientBrush)Grid_Virwport.Background;
-            double offset = 0.5;
-            double pitch = PitchAngle * Math.PI / 180;
+            double offset = zero_offset + pitch_offset, offset_sky = offset - 0.3, offset_gnd = offset + 0.3;
+            if (offset > 1.0)
+            { offset = 1.0; offset_gnd = 1.0f; }
+            if (offset < 0.0)
+            { offset = 0.0; offset_sky = 0.0f; }
+            if (offset_sky > 1.0)
+                offset_sky = 1.0;
+            /* 
+            double pitch = PitchAngle * Math.PI / 180;            
             if (pitch > Math.PI / 3) pitch = Math.PI / 3;//设置俯仰视觉为120度
             if (pitch < -Math.PI / 3) pitch = -Math.PI / 3;
             offset = 0.5 * (1 + Math.Tan(pitch) / Math.Tan(Math.PI / 3));
-            bkbrush.GradientStops[1].Offset = offset;
+            */
+            bkbrush.GradientStops[1].Offset = offset_sky;
             bkbrush.GradientStops[2].Offset = offset;
+            bkbrush.GradientStops[3].Offset = offset;
+            bkbrush.GradientStops[4].Offset = offset_gnd;
 
             DrawRollPitchCycle();
         }
@@ -360,7 +415,7 @@ namespace HUD
             set { SetValue(FlyHeightProperty, value); }
         }
         public static readonly DependencyProperty FlyHeightProperty =
-            DependencyProperty.Register("FlyHeight", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, GestureChangedCallback));
+            DependencyProperty.Register("FlyHeight", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, AttitudeChangedCallback));
         /// <summary>
         /// 空速
         /// </summary>
@@ -370,7 +425,7 @@ namespace HUD
             set { SetValue(AirSpeedProperty, value); }
         }
         public static readonly DependencyProperty AirSpeedProperty =
-            DependencyProperty.Register("AirSpeed", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, GestureChangedCallback));
+            DependencyProperty.Register("AirSpeed", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, AttitudeChangedCallback));
         /// <summary>
         /// 地速
         /// </summary>
@@ -380,7 +435,7 @@ namespace HUD
             set { SetValue(GroundSpeedProperty, value); }
         }
         public static readonly DependencyProperty GroundSpeedProperty =
-            DependencyProperty.Register("GroundSpeed", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, GestureChangedCallback));
+            DependencyProperty.Register("GroundSpeed", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, AttitudeChangedCallback));
         /// <summary>
         /// 电压
         /// </summary>
@@ -390,7 +445,7 @@ namespace HUD
             set { SetValue(VoltageProperty, value); }
         }
         public static readonly DependencyProperty VoltageProperty =
-            DependencyProperty.Register("Voltage", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, GestureChangedCallback));
+            DependencyProperty.Register("Voltage", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, AttitudeChangedCallback));
         /// <summary>
         /// 电流
         /// </summary>
@@ -400,7 +455,7 @@ namespace HUD
             set { SetValue(GalvanicProperty, value); }
         }
         public static readonly DependencyProperty GalvanicProperty =
-            DependencyProperty.Register("Galvanic", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, GestureChangedCallback));
+            DependencyProperty.Register("Galvanic", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)0, AttitudeChangedCallback));
         /// <summary>
         /// 剩余电量百分比
         /// </summary>
@@ -410,7 +465,7 @@ namespace HUD
             set { SetValue(BatteryPercentProperty, value); }
         }
         public static readonly DependencyProperty BatteryPercentProperty =
-            DependencyProperty.Register("BatteryPercent", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)1, GestureChangedCallback));
+            DependencyProperty.Register("BatteryPercent", typeof(double), typeof(HUDControl), new FrameworkPropertyMetadata((double)1, AttitudeChangedCallback));
         /// <summary>
         /// 飞行时间
         /// </summary>
@@ -420,7 +475,7 @@ namespace HUD
             set { SetValue(FlyTimeProperty, value); }
         }
         public static readonly DependencyProperty FlyTimeProperty =
-            DependencyProperty.Register("FlyTime", typeof(int), typeof(HUDControl), new FrameworkPropertyMetadata((int)0, GestureChangedCallback));
+            DependencyProperty.Register("FlyTime", typeof(int), typeof(HUDControl), new FrameworkPropertyMetadata((int)0, AttitudeChangedCallback));
         /// <summary>
         /// 是否有EKF
         /// </summary>
@@ -430,7 +485,7 @@ namespace HUD
             set { SetValue(HasEKFProperty, value); }
         }
         public static readonly DependencyProperty HasEKFProperty =
-            DependencyProperty.Register("HasEKF", typeof(bool), typeof(HUDControl), new FrameworkPropertyMetadata((bool)true, GestureChangedCallback));
+            DependencyProperty.Register("HasEKF", typeof(bool), typeof(HUDControl), new FrameworkPropertyMetadata((bool)true, AttitudeChangedCallback));
         /// <summary>
         /// 是否有Vibe
         /// </summary>
@@ -440,7 +495,7 @@ namespace HUD
             set { SetValue(HasVibeProperty, value); }
         }
         public static readonly DependencyProperty HasVibeProperty =
-            DependencyProperty.Register("HasVibe", typeof(bool), typeof(HUDControl), new FrameworkPropertyMetadata((bool)true, GestureChangedCallback));
+            DependencyProperty.Register("HasVibe", typeof(bool), typeof(HUDControl), new FrameworkPropertyMetadata((bool)true, AttitudeChangedCallback));
         /// <summary>
         /// 是否有GPS
         /// </summary>
@@ -450,7 +505,7 @@ namespace HUD
             set { SetValue(HasGPSProperty, value); }
         }
         public static readonly DependencyProperty HasGPSProperty =
-            DependencyProperty.Register("HasGPS", typeof(bool), typeof(HUDControl), new FrameworkPropertyMetadata((bool)false, GestureChangedCallback));
+            DependencyProperty.Register("HasGPS", typeof(bool), typeof(HUDControl), new FrameworkPropertyMetadata((bool)false, AttitudeChangedCallback));
 
 
         //绘制右边海拔（高度）矩形
