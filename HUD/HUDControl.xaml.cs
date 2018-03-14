@@ -334,6 +334,7 @@ namespace HUD
             #endregion
 
             Canvas_ViewPortMiddle.RenderTransform = new RotateTransform(-RollAngle);
+            canvas_grad_bg.RenderTransform = new RotateTransform(-RollAngle);
 
             Canvas.SetTop(Canvas_RollCursor, -cycleR - Canvas_RollCursor.Height);
             Canvas.SetLeft(Canvas_RollCursor, -Canvas_RollCursor.Width / 2);
@@ -343,37 +344,44 @@ namespace HUD
         protected virtual void RedrawRoll()
         {
             if (Grid_Virwport.ActualHeight == 0 || Grid_Virwport.ActualWidth == 0) return;
-            var bkbrush = (LinearGradientBrush)Grid_Virwport.Background;
+            //var bkbrush = (LinearGradientBrush)Grid_Virwport.Background;
             double roll = (RollAngle % 360) * Math.PI / 180;
             if (roll > Math.PI) roll = Math.PI * 2 - roll;
             if (roll < -Math.PI) roll = Math.PI * 2 + roll;
             double oppositeangle = Math.Atan(Grid_Virwport.ActualWidth / Grid_Virwport.ActualHeight);
             double startx = 0, starty = 0;
-            if (roll >= -oppositeangle && roll <= oppositeangle)
+            double endx = 0, endy = 0;
+
+            double viewport_radius = Math.Max(Grid_Virwport.ActualWidth, Grid_Virwport.ActualHeight);
+            if (roll >= Math.PI * -0.5 && roll <= Math.PI * 0.5)
             {
-                startx = 0.5 * Grid_Virwport.ActualWidth - 0.5 * Grid_Virwport.ActualHeight * Math.Tan(roll);
-                starty = 0;
+                double vp_x = viewport_radius * Math.Sin(roll), vp_y = viewport_radius * Math.Cos(roll);
+                endx = vp_x + viewport_radius;
+                endy = vp_y + viewport_radius;
+                startx = viewport_radius - vp_x;
+                starty = viewport_radius - vp_y;
             }
-            else if (roll >= Math.PI - oppositeangle || roll <= -Math.PI + oppositeangle)
-            {
-                if (roll > 0)
-                    startx = 0.5 * Grid_Virwport.ActualWidth - 0.5 * Grid_Virwport.ActualHeight * Math.Tan(Math.PI - roll);
-                else
-                    startx = 0.5 * Grid_Virwport.ActualWidth + 0.5 * Grid_Virwport.ActualHeight * Math.Tan(Math.PI + roll);
-                starty = Grid_Virwport.ActualHeight;
-            }
-            else if (roll > oppositeangle && roll < Math.PI - oppositeangle)
-            {
-                startx = 0;
-                starty = 0.5 * Grid_Virwport.ActualHeight - 0.5 * Grid_Virwport.ActualWidth / Math.Tan(roll);
-            }
-            else if (roll > -Math.PI + oppositeangle && roll < -oppositeangle)
-            {
-                startx = Grid_Virwport.ActualWidth;
-                starty = 0.5 * Grid_Virwport.ActualHeight + 0.5 * Grid_Virwport.ActualWidth / Math.Tan(roll);
-            }
-            bkbrush.StartPoint = new Point(startx, starty);
-            bkbrush.EndPoint = new Point(Grid_Virwport.ActualWidth - startx, Grid_Virwport.ActualHeight - starty);
+            //else if (roll >= Math.PI - oppositeangle || roll <= -Math.PI + oppositeangle)
+            //{
+            //    if (roll > 0)
+            //        startx = 0.5 * Grid_Virwport.ActualWidth - 0.5 * Grid_Virwport.ActualHeight * Math.Tan(Math.PI - roll);
+            //    else
+            //        startx = 0.5 * Grid_Virwport.ActualWidth + 0.5 * Grid_Virwport.ActualHeight * Math.Tan(Math.PI + roll);
+            //    starty = Grid_Virwport.ActualHeight;
+            //}
+            //else if (roll > oppositeangle && roll < Math.PI - oppositeangle)
+            //{
+            //    startx = 0;
+            //    starty = 0.5 * Grid_Virwport.ActualHeight - 0.5 * Grid_Virwport.ActualWidth / Math.Tan(roll);
+            //}
+            //else if (roll > -Math.PI + oppositeangle && roll < -oppositeangle)
+            //{
+            //    startx = Grid_Virwport.ActualWidth;
+            //    starty = 0.5 * Grid_Virwport.ActualHeight + 0.5 * Grid_Virwport.ActualWidth / Math.Tan(roll);
+            //}
+
+            //bkbrush.StartPoint = new Point(startx, starty);
+            //bkbrush.EndPoint = new Point(endx, endy);
 
             DrawRollPitchCycle();
         }
@@ -383,7 +391,7 @@ namespace HUD
         protected virtual void RedrawPitch()
         {            
             double pitch_offset = pitch_delta_h * PitchAngle;
-            var bkbrush = (LinearGradientBrush)Grid_Virwport.Background;
+            //var bkbrush = (LinearGradientBrush)Grid_Virwport.Background;
             double offset = zero_offset + pitch_offset, offset_sky = offset - 0.3, offset_gnd = offset + 0.3;
             if (offset > 1.0)
             { offset = 1.0; offset_gnd = 1.0f; }
@@ -397,10 +405,10 @@ namespace HUD
             if (pitch < -Math.PI / 3) pitch = -Math.PI / 3;
             offset = 0.5 * (1 + Math.Tan(pitch) / Math.Tan(Math.PI / 3));
             */
-            bkbrush.GradientStops[1].Offset = offset_sky;
-            bkbrush.GradientStops[2].Offset = offset;
-            bkbrush.GradientStops[3].Offset = offset;
-            bkbrush.GradientStops[4].Offset = offset_gnd;
+            //bkbrush.GradientStops[1].Offset = offset_sky;
+            //bkbrush.GradientStops[2].Offset = offset;
+            //bkbrush.GradientStops[3].Offset = offset;
+            //bkbrush.GradientStops[4].Offset = offset_gnd;
 
             DrawRollPitchCycle();
         }
