@@ -21,10 +21,10 @@
             <Canvas.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF083CB0"/>
-                    <GradientStop Color="#FF083CB0" Offset="0.2"/>
+                    <GradientStop Color="#FF083CB0" Offset="0.35"/>
                     <GradientStop Color="#FF969083" Offset="0.5"/>
                     <GradientStop Color="#FF603908" Offset="0.5"/>
-                    <GradientStop Color="#FF1A1305" Offset="0.8"/>
+                    <GradientStop Color="#FF1A1305" Offset="0.65"/>
                     <GradientStop Color="#FF1A1305" Offset="1"/>
                 </LinearGradientBrush>
             </Canvas.Background>
@@ -34,12 +34,12 @@
             <Grid x:Name="main_view">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" x:Name="grid_row_yaw"/>
-                    <RowDefinition Height="320"/>
-                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="340"/>
+                    <RowDefinition Height="30"/>
                 </Grid.RowDefinitions>
 
                 <Border BorderBrush="#FFAD64EC" BorderThickness="0" ToolTip="航向">
-                    <Grid x:Name="Grid_YawStaff" Width="400" Height="40">
+                    <Grid x:Name="Grid_YawStaff" Width="400" Height="30">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition Width="40"/>
@@ -47,8 +47,8 @@
                         </Grid.ColumnDefinitions>
                         <Canvas x:Name="Canvas_YawStaff_Left"  Grid.Column="0" Background="#00808BF9"/>
                         <Canvas x:Name="Canvas_YawStaff_Mid"  Grid.Column="1" Background="#00808BF9">
-                            <TextBox x:Name="text_yaw_value" Background="{x:Null}" Foreground="#FF1EEE15" FontSize="16" Canvas.Left="0" Canvas.Top="0" Height="30" Width="40" 
-                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center" SelectionBrush="#FF1EEE15" BorderBrush="#FF1EEE15" FontWeight="Bold" BorderThickness="2" Text="360"/>
+                            <TextBox x:Name="text_yaw_value" Background="{x:Null}" Foreground="#FF1EEE15" FontSize="12" Canvas.Left="0" Canvas.Top="0" Height="30" Width="40" 
+                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center" SelectionBrush="#FF1EEE15" BorderBrush="#FF1EEE15"  BorderThickness="2" Text="360"/>
                         </Canvas>
                         <Canvas x:Name="Canvas_YawStaff_Right"  Grid.Column="2" Background="#00808BF9"/>
                     </Grid>
@@ -63,8 +63,8 @@
                     <Canvas x:Name="Canvas_ViewPortLeft" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <Canvas Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <Canvas x:Name="Canvas_RollCursor" Width="30" Height="50">
-                            <TextBlock x:Name="Text_RollStaff_Value" Background="Red" Width="30" Text="180" TextAlignment="Center" Foreground="White" FontSize="12"/>
-                            <Line Y1="16" Y2="26" Stroke="Red" StrokeThickness="2" Opacity="0.7" Canvas.Left="15"/>
+                            <TextBlock x:Name="Text_RollStaff_Value" Background="#BF087E03" Width="30" Text="180" TextAlignment="Center" Foreground="White" FontSize="12"/>
+                            <Line Y1="16" Y2="26" Stroke="#BF087E03" StrokeThickness="2" Opacity="0.7" Canvas.Left="15"/>
                         </Canvas>
                         <Canvas x:Name="Canvas_ViewPortMiddle" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Canvas>

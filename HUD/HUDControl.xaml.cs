@@ -152,7 +152,7 @@ namespace HUD
                     {
                         Line left_tl = new Line();
                         left_tl.X1 = (float)(d2 - start_yaw) * wl / yaw_total_span;
-                        left_tl.Y1 = 20;
+                        left_tl.Y1 = 24;
                         left_tl.X2 = left_tl.X1;
                         left_tl.Y2 = 30;
                         left_tl.Stroke = Brushes.LimeGreen;
@@ -163,11 +163,11 @@ namespace HUD
                             var ticktext = new BorderTextLabel();
                             //ticktext.FontWeight = FontWeights.ExtraBold;
                             ticktext.Stroke = Brushes.LimeGreen;
-                            ticktext.FontSize = 14;
+                            ticktext.FontSize = 12;
                             ticktext.Text = (d2 % 360).ToString();
                             ticktext.Foreground = Brushes.LimeGreen;
                             ticktext.StrokeThickness = 0;
-                            Canvas.SetTop(ticktext, 2);
+                            Canvas.SetTop(ticktext, 4);
                             Canvas.SetLeft(ticktext, left_tl.X1 - 10);
                             yawstaffCanvas.Children.Add(ticktext);
                         }
@@ -290,7 +290,7 @@ namespace HUD
             Canvas_ViewPortMiddle.Children.Clear();
             bool isLargeArc = MaxRollAngle > 90;
             //double cycleR = Grid_Virwport.ActualWidth / 4;
-            double cycleR = 115;
+            double cycleR = 110;
             Point startPoint = new Point(-cycleR * Math.Sin(MaxRollAngle * Math.PI / 180), -cycleR * Math.Cos(MaxRollAngle * Math.PI / 180));
             Point endPoint = new Point(cycleR * Math.Sin(MaxRollAngle * Math.PI / 180), -cycleR * Math.Cos(MaxRollAngle * Math.PI / 180));
             if (MaxRollAngle == 180)
@@ -334,9 +334,18 @@ namespace HUD
             #endregion
 
             Canvas_ViewPortMiddle.RenderTransform = new RotateTransform(-RollAngle);
-            canvas_grad_bg.RenderTransform = new RotateTransform(-RollAngle);
 
-            Canvas.SetTop(Canvas_RollCursor, -cycleR - Canvas_RollCursor.Height);
+            canvas_grad_bg.Height = Grid_Virwport.ActualHeight * 3;
+            canvas_grad_bg.Width = Grid_Virwport.ActualWidth * 3;
+            double pitch_dist = canvas_grad_bg.ActualHeight / 360;
+            var rt = new RotateTransform(-RollAngle);
+            var tt = new TranslateTransform(0, PitchAngle * pitch_dist);
+            var tg = new TransformGroup();
+            tg.Children.Add(tt);
+            tg.Children.Add(rt);
+            canvas_grad_bg.RenderTransform = tg;
+
+            Canvas.SetTop(Canvas_RollCursor, -0.9 * cycleR - Canvas_RollCursor.Height);
             Canvas.SetLeft(Canvas_RollCursor, -Canvas_RollCursor.Width / 2);
             Text_RollStaff_Value.Text = RollAngle.ToString("0.#");
         }
